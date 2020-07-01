@@ -1,0 +1,22 @@
+
+# form template
+npm install --save mdbvue
+
+# material icons
+npm install @mdi/js -D
+
+npm install @fortawesome/fontawesome-free -D
+
+npm i material-icons
+
+npm i nuxt-material-design-icons-iconfont
+(import 'material-design-icons-iconfont/dist/material-design-icons.css')
+
+npm install vue-daum-postcode --save
+
+npm install @mdi/font -D
+(import '@mdi/font/css/materialdesignicons.css')
+
+npm i vue-material-design-icons
+
+npm install vue-chartjs chart.js --save
