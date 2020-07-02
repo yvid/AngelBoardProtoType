@@ -502,6 +502,7 @@ export default {
   },
   watch: {
     storeUserType(newVal, oldVal) {
+      console.log('userType Change')
       this.userType = newVal
     }
   },
@@ -555,6 +556,7 @@ export default {
     },
     logout() {
       localStorage.removeItem('account')
+      localStorage.removeItem('accountInfo')
       localStorage.removeItem('payInfo')
       this.adminOn = false
       this.setPayOn(false)

@@ -9,6 +9,7 @@ Created on Mon Mar 23 17:26:43 2020
 from flask import request, make_response, jsonify
 from flask import current_app as app
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 from .models_human import db, HumanBasic, HumanDiv, HumanHead, HumanItem, HumanStatus, HumanInvPps, HumanInv
 from .models import db, AccountInfo
 from flask_marshmallow import Marshmallow
@@ -81,13 +82,165 @@ def human_detail():
     db.session.close()
     
     return jsonify(res)
+
+@app.route('/human/updater', methods=['POST'])
+def human_updater(human):
+    hSerial = human['hSerial']
+    res = jsonify({'hSerial': hSerial})
+    
+    try:
+        regEMailID  = human['regEMailID']
+        invInfo = human['invInfo']
+        invInfoAddIntention = human['invInfoAddIntention']
+        
+        row = HumanBasic.query.filter(HumanBasic.hSerial == func.binary(hSerial)).first()
+        
+        row.hSerial     = hSerial,
+        row.regEMailID  = regEMailID,
+        row.regTel      = human['regTel'],
+        row.regContPwd  = human['regContPwd'],
+        row.coNameKor   = human['coNameKor'],
+        row.coNameEng   = human['coNameEng'],
+        row.foundedDate = human['foundedDate'],
+        row.corpDiv     = human['corpDiv'],
+        row.coStatus    = human['coStatus'],
+        row.coAddr      = human['coAddr'],
+        row.coEmail     = human['coEmail'],
+        row.coWeb       = human['coWeb'],
+        row.coLogo      = human['coLogo'],
+        row.coTel       = human['coTel']
+        
+        db.session.commit()
+        
+        row = HumanDiv.query.filter(HumanDiv.hSerial == func.binary(hSerial)).delete(synchronize_session='fetch')
+        
+        coDiv = human['coDiv']
+        # 회사 구분 - 다중 선택
+        for str in coDiv:
+            new_humanDiv = HumanDiv(
+                    hSerial  = hSerial,
+                    coDiv    = str
+                )
+            db.session.add(new_humanDiv)
+            
+        db.session.commit()
+                
+        row = HumanHead.query.filter(HumanHead.hHDSerial == func.binary(hSerial)).first()
+        row.hHDSerial                 = hSerial,
+        row.representativeNameKor     = human['representativeNameKor'],
+        row.representativeNameEng     = human['representativeNameEng'],
+        row.representativeTel         = human['representativeTel'],
+        row.representativeNationality = human['representativeNationality'],
+        row.representativeGender      = human['representativeGender'],
+        row.representativeFounderSame = human['representativeFounderSame']['value'],
+        row.founderNameKor            = human['founderNameKor'],
+        row.coRepresentative          = human['coRepresentative']['value'],
+        row.coRepresentativeNameKor   = human['coRepresentativeNameKor']
+        
+        db.session.commit()
+        
+        row = HumanItem.query.filter(HumanItem.hITMSerial == func.binary(hSerial)).first()
+        row.hITMSerial     = hSerial,
+        row.serviceNameKor = human['serviceNameKor'],
+        row.serviceNameEng = human['serviceNameEng'],
+        row.serviceSummary = human['serviceSummary'],
+        row.patent         = human['patent'],
+        row.tech           = human['tech'],
+        row.largeField     = human['largeField'],
+        row.smallField     = human['smallField'],
+        row.o2o            = human['o2o'],
+        row.businessType   = human['businessType'],
+        row.serviceType    = human['serviceType'],
+        row.serviceStatus  = human['serviceStatus'],
+        row.serviceURL     = human['serviceURL'],
+        row.similarService = human['similarService'],
+        row.serviceLogo    = human['serviceLogo']
+        
+        db.session.commit()
+        
+        row = HumanStatus.query.filter(HumanStatus.hSTSerial == func.binary(hSerial)).first()
+        
+        capital             = int(human['capital'].replace(',', ''))
+        totalAssets         = int(human['totalAssets'].replace(',', ''))
+        totalLiabilities    = int(human['totalLiabilities'].replace(',', ''))
+            
+        row.hSTSerial           = hSerial,
+        row.invStage            = human['invStage'],
+        row.prevYearSaleVolume  = human['prevYearSaleVolume'],
+        row.invAttrTargetAmount = human['invAttrTargetAmount'],
+        row.problemsToSolve     = human['problemsToSolve'],
+        row.ourSolution         = human['ourSolution'],
+        row.aboutTeam           = human['aboutTeam'],
+        row.capital             = capital,
+        row.totalAssets         = totalAssets,
+        row.totalLiabilities    = totalLiabilities,
+        row.numberOfEmp         = human['numberOfEmp'],
+        row.invInfo             = invInfo,
+        row.invInfoAddIntention = invInfoAddIntention  
+                    
+        db.session.commit()
+        
+        row = HumanInvPps.query.filter(HumanInvPps.hVPSerial == func.binary(hSerial)).delete(synchronize_session='fetch')
+        invFundPurpose = human['invFundPurpose']
+        
+        for str in invFundPurpose:
+                new_humanInvPps = HumanInvPps(
+                        hVPSerial  = hSerial,
+                        invFundPurpose    = str
+                    )
+                db.session.add(new_humanInvPps)
+        db.session.commit()
+        
+        if invInfo == '01':
+           row = HumanInv.query.filter(HumanInv.hVSerial == func.binary(hSerial)).delete(synchronize_session='fetch')
+           db.session.expire_all()
+           
+           # 기업 투자 정보(이력)유무 / 정보 등록 의사
+           invArr = human['invArr']    
+           
+           # 기업 투자 정보(이력) - 다중 입력
+           for str in invArr:
+               new_humanInv = HumanInv(
+                       hVSerial            = hSerial,
+                       preInvTime          = str['preInvTime'],
+                       preInvDate          = str['preInvDate'],
+                       preInvStage         = str['preInvStage'],
+                       preInvAmount        = str['preInvAmount'],
+                       preInvestor         = str['preInvestor']
+                       
+                   )
+               db.session.add(new_humanInv)
+                   
+           db.session.commit()
+            
+        
+        row = AccountInfo.query.filter(AccountInfo.emailIdF == func.binary(regEMailID)).first()
+        row.emailIdF     = row.emailIdF
+        row.accountType  = row.accountType
+        row.accountCo    = hSerial
+        row.accountFCo   = row.accountFCo
+        row.accountFTech = row.accountFTech
+        row.newsRx       = row.newsRx 
+        
+        db.session.commit()
+        db.session.close()
+    except Exception as e:
+        print ('HUMAN UPDATER EXCEPTION E :: ', e, flush=True)
+        jsonify({'hSerial': fail})
+        
+    return res
         
 @app.route('/human/register', methods=['POST'])
 def human_register():
     human = request.get_json(force=True)
     res = 'fail'
     
-    hSerial = hSerial_GEN()
+    hSerial = None
+    
+    if not human['hSerial']:
+        hSerial = hSerial_GEN()
+    else:
+        return human_updater(human)
     
     print ('human register check01, human :: ', human, flush=True)
     
@@ -114,7 +267,6 @@ def human_register():
                     coLogo      = human['coLogo'],
                     coTel       = human['coTel']
                 )
-            
             db.session.add(new_humanBasic)
             db.session.commit()
             
@@ -129,7 +281,7 @@ def human_register():
                     )
                 db.session.add(new_humanDiv)
                 
-            
+            print ('human register check01 :: ', flush=True)
             # 기업 대표자 정보
             new_humanHead = HumanHead(
                     hHDSerial                 = hSerial,
@@ -144,6 +296,7 @@ def human_register():
                     coRepresentativeNameKor   = human['coRepresentativeNameKor']
                 )
             db.session.add(new_humanHead)
+            print ('human register check02 :: ', flush=True)
             
             # 기업 아이템 정보
             new_humanItem = HumanItem(
@@ -165,14 +318,10 @@ def human_register():
                 )
             db.session.add(new_humanItem)
             
-            capital             = human['capital'].replace(',', '')
-            totalAssets         = human['totalAssets'].replace(',', '')
-            totalLiabilities    = human['totalLiabilities'].replace(',', '')
-            
-            print ('capital :: ', capital, flush=True)
-            print ('totalAssets :: ', totalAssets, flush=True)
-            print ('totalLiabilities :: ', totalLiabilities, flush=True)
-            
+            print ('human register check03 :: ', flush=True)
+            capital             = int(human['capital'].replace(',', ''))
+            totalAssets         = int(human['totalAssets'].replace(',', ''))
+            totalLiabilities    = int(human['totalLiabilities'].replace(',', ''))
             # 기업 상태 정보
             new_humanStatus = HumanStatus(
                     hSTSerial           = hSerial,
@@ -230,13 +379,17 @@ def human_register():
             db.session.commit()
             db.session.close()
         
-        res = '200'
+            res = jsonify({'hSerial': hSerial})
+        
         return res
     except Exception as e:
         print ('Exception :: ',e , flush=True)
         res = '500'
         return res
-    
+    except (SQLAlchemyError, SQLAlchemyError) as e:
+        err = str(e.__dict__['orig'])
+        print ('SQLAlchemyError :: ',err , flush=True)
+        res = '500'
     return res
 
 def hSerial_GEN():

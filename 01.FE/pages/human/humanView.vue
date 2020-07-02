@@ -927,6 +927,8 @@ export default {
         this.human.serviceStatus = this.serviceStatusFilter(
           this.human.serviceStatus
         )
+
+        this.confirmRegister(this.human.regEMailID)
       })
       .catch((err) => {
         console.error(err)
@@ -948,6 +950,12 @@ export default {
         const accountInfo = JSON.parse(localStorage.getItem('accountInfo'))
         this.cpnOn = !!accountInfo.accountCo
         this.angel = accountInfo
+      }
+    },
+    confirmRegister(regEmaiId) {
+      if (localStorage.getItem('accountInfo') !== null) {
+        const accountInfo = JSON.parse(localStorage.getItem('accountInfo'))
+        this.payOn = accountInfo.emailIdF === regEmaiId ? true : this.payOn
       }
     },
     prcsInvestment() {

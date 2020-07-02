@@ -1,13 +1,7 @@
 <template>
   <v-layout justify-center>
     <v-flex xs12 sm10 md8 lg8>
-      <div v-if="modify" class="complete">
-        <v-card>
-          나의 기업정보 수정 / 삭제 서비스를 준비 중 입니다.
-        </v-card>
-      </div>
-
-      <v-card v-if="!modify" class="overflow-hidden">
+      <v-card class="overflow-hidden">
         <v-app-bar
           absolute
           elevate-on-scroll
@@ -23,7 +17,7 @@
               </v-tab>
             </v-tabs>
           </template>
-          <v-toolbar-title>정보 등록</v-toolbar-title>
+          <v-toolbar-title @click="setSample()">정보 등록</v-toolbar-title>
           <v-spacer></v-spacer>
           <span style="color: #BBDEFB; font-size:13px;">*표시: 필수입력</span>
         </v-app-bar>
@@ -810,7 +804,9 @@
                       label="* 자본금 (숫자만 입력)"
                       required
                       placeholder="금액을 숫자만 입력해주세요"
-                      @keyup="human.capital = typingCash($event.target.value)"
+                      @keyup="
+                        human.capital = typingCash($event.target.value, 50)
+                      "
                     ></v-text-field>
 
                     <v-text-field
@@ -822,7 +818,7 @@
                       required
                       placeholder="금액을 숫자만 입력해주세요"
                       @keyup="
-                        human.totalAssets = typingCash($event.target.value)
+                        human.totalAssets = typingCash($event.target.value, 50)
                       "
                     ></v-text-field>
 
@@ -835,7 +831,10 @@
                       required
                       placeholder="금액을 숫자만 입력해주세요"
                       @keyup="
-                        human.totalLiabilities = typingCash($event.target.value)
+                        human.totalLiabilities = typingCash(
+                          $event.target.value,
+                          50
+                        )
                       "
                     ></v-text-field>
 
@@ -1095,12 +1094,13 @@
     <v-dialog v-model="complete" max-width="400">
       <v-card>
         <v-card-title>
-          <span>기업정보 등록이 완료 되었습니다.</span>
+          <span v-if="!modify">기업정보 등록이 완료 되었습니다.</span>
+          <span v-if="modify">기업정보 수정이 완료 되었습니다.</span>
           <v-spacer></v-spacer>
         </v-card-title>
         <v-card-actions class="d-flex flex-row-reverse">
           <v-btn color="primary" text @click="complete = false">
-            닫기
+            페이지가 이동 됩니다.
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -1180,6 +1180,8 @@ export default {
     invComplete: false,
     requiredNotice: false,
     human: {
+      hSerial: null,
+
       /* tab-1 */
       regEMailID: null,
       regTel: null,
@@ -1213,7 +1215,7 @@ export default {
       serviceSummary: null,
       patent: null,
       tech: null,
-      LargeField: null,
+      largeField: null,
       smallField: null,
       o2o: null,
       businessType: null,
@@ -1378,6 +1380,81 @@ export default {
     getAccountCompSerial(accountInfo) {
       if (accountInfo.accountCo !== '' && accountInfo.accountCo !== null) {
         this.modify = true
+        this.$axios
+          .post(
+            '/api/human/detail',
+            JSON.stringify({ hSerial: accountInfo.accountCo })
+          )
+          .then((res) => {
+            this.human = res.data[0][0]
+            this.human.invArr = [
+              {
+                datePick02: false,
+                preInvDate: new Date().toISOString().substr(0, 10),
+                preInvTime: 1,
+                preInvStage: null,
+                preInvAmount: null,
+                preInvestor: null
+              }
+            ]
+            /* 대표자/설립자/공동대표 설정 */
+            if (res.data[0][0].representativeFounderSame === '01') {
+              this.human.representativeFounderSame = {
+                text: '동일',
+                value: '01'
+              }
+            } else {
+              this.human.representativeFounderSame = {
+                text: '비동일',
+                value: '02'
+              }
+            }
+
+            if (res.data[0][0].coRepresentative === '01') {
+              this.human.coRepresentative = { text: '유', value: '01' }
+            } else {
+              this.human.coRepresentative = { text: '무', value: '02' }
+            }
+
+            /* coDiv(회사구분) 다중선택 수정 시 기존값 적용 */
+            this.human.coDiv = []
+            for (const i in res.data[1]) {
+              this.human.coDiv[i] = res.data[1][i].coDiv
+            }
+
+            this.human.foundedDate = this.unixTimeFilter(this.human.foundedDate)
+            this.human.capital = this.typingCash(
+              this.human.capital.toString(),
+              50
+            )
+            this.human.totalAssets = this.typingCash(
+              this.human.totalAssets.toString(),
+              50
+            )
+            this.human.totalLiabilities = this.typingCash(
+              this.human.totalLiabilities.toString(),
+              50
+            )
+
+            /* invFundPurpose(투자금 사용목적) 다중선택 수정 시 기존값 적용 */
+            this.human.invFundPurpose = []
+            for (const i in res.data[2]) {
+              this.human.invFundPurpose[i] = res.data[2][i].invFundPurpose
+            }
+
+            if (res.data[3].length > 0) {
+              /* invArr(투자실적 정보) 다중선택 수정 시 기존값 적용 */
+              for (const i in res.data[3]) {
+                this.human.invArr[i] = res.data[3][i]
+                this.human.invArr[i].preInvDate = this.unixTimeFilter(
+                  this.human.invArr[i].preInvDate
+                )
+              }
+            }
+          })
+          .catch((err) => {
+            console.error(err)
+          })
       }
     },
     /* 
@@ -1429,10 +1506,10 @@ export default {
       const pattern = /[^0-9]/
       return this.chkByte(e.replace(pattern, ''), byte)
     },
-    typingCash(e) {
+    typingCash(e, byte) {
       const pattern = /[^0-9]/
 
-      let res = e.replace(pattern, '')
+      let res = this.chkByte(e).replace(pattern, '')
       res = res.replace(/,/g, '')
       res = res.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
@@ -1514,6 +1591,13 @@ export default {
         return 4
       }
     },
+    unixTimeFilter(val) {
+      const date = new Date(val + 1000)
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' ')
+      return date.substring(0, 10)
+    },
 
     /* 
     ================================================================================================
@@ -1575,24 +1659,98 @@ export default {
       this.$axios
         .post('/api/human/register', JSON.stringify(this.human))
         .then((res) => {
-          const vm = this
-          this.complete = !this.complete
-          this.$store.commit('userType/changeUserType', 'H01')
-
-          setTimeout(function() {
-            vm.movePageToAngelList()
-          }, 2000)
+          this.$store.commit('userType/changeUserType', 'H02')
+          this.pageToList(res.data.hSerial)
         })
         .catch((err) => {
           throw err
         })
     },
-    movePageToAngelList() {
+    async pageToList(hSerial) {
       this.complete = !this.complete
+      await this.setStoreUserType()
+      await this.setLocalStorage(hSerial)
+      setTimeout(() => {
+        this.complete = !this.complete
+        this.$router.push({ path: '/human/humanList' })
+      }, 1500)
+    },
+    setLocalStorage(hSerial) {
+      return new Promise((resolve, reject) => {
+        const accountInfo = JSON.parse(localStorage.getItem('accountInfo'))
+        accountInfo.accountCo = hSerial
+        localStorage.setItem('accountInfo', JSON.stringify(accountInfo))
+        resolve()
+      })
+    },
+    setStoreUserType() {
+      return new Promise((resolve, reject) => {
+        this.$store.commit('userType/changeUserType', 'H01')
+        resolve()
+      })
+    },
+    movePageToAngelList() {
       this.$router.push({ path: '/human/humanList' })
     },
     testStore() {
       this.$store.commit('userType/changeUserType', 'H01')
+    },
+    setSample() {
+      /*
+        테스트 하기 위해 자동입력 샘플 내용
+      */
+      this.human.regTel = '01055002200'
+      this.human.regContPwd = 123123
+      this.human.coNameEng = 'TEST Co, LTD'
+      this.human.coDiv = ['01', '02']
+      this.human.corpDiv = '01'
+      this.human.coStatus = '01'
+      this.human.coAddr = '서울 동작구 상도동 엔젤보드 주식회사'
+      this.human.coNameKor = '주식회사 테스트'
+      this.human.coEmail = 'smaple@mail.com'
+      this.human.coWeb = 'acmd.co.kr'
+      this.human.coLogo = 'http://211.209.243.154:8082/angel_logo.png'
+      this.human.coTel = '025506565'
+
+      this.human.representativeNameKor = '김사장'
+      this.human.representativeNameEng = 'Boss Kim'
+      this.human.representativeTel = '01021213232'
+      this.human.representativeNationality = 'South Korea'
+      this.human.representativeGender = '01'
+      this.human.representativeFounderSame = { text: '동일', value: '01' }
+      this.human.coRepresentative = { text: '유', value: '01' }
+      this.human.coRepresentativeNameKor = '임사장'
+
+      this.human.serviceNameKor = '엔젤보드 투자 유치사 서비스명'
+      this.human.serviceNameEng = 'Angel Board Human Serivce Name'
+      this.human.serviceSummary = '엔젤보드 투자 유치사 서비스 요약 내용'
+      this.human.patent = '특허: 국내 001/ 해외 002'
+      this.human.tech = '03'
+      this.human.largeField = '03'
+      this.human.smallField = '엔젤보드 투자 유치사 서비스 소분야 내용'
+      this.human.o2o = '01'
+      this.human.businessType = '02'
+      this.human.serviceType = '02'
+      this.human.serviceStatus = '01'
+      this.human.serviceURL = 'acmd.co.kr'
+      this.human.similarService =
+        '엔젤보드와 유사한 서비스는 투자서비스는 있지만 기술융합 서비스는 없습니다.'
+      this.human.serviceLogo = 'http://211.209.243.154:8082/angel_logo.png'
+
+      this.human.invStage = '01'
+      this.human.prevYearSaleVolume = '01'
+      this.human.invAttrTargetAmount = 3
+      this.human.invFundPurpose = ['01', '03']
+      this.human.problemsToSolve =
+        '엔젤보드의 해결할 문제는 엔젤보드 서비스 인프라 입니다.'
+      this.human.ourSolution =
+        '엔젤보드 서비스 인프라를 위해 투자유치 중 입니다.'
+      this.human.aboutTeam =
+        '엔젤보드와 에이씨엠디 멤버는 대표, 이사, 실장, 팀장'
+      this.human.capital = '50,000,000'
+      this.human.totalAssets = '150,000,000'
+      this.human.totalLiabilities = '30,000,000'
+      this.human.numberOfEmp = 25
     }
   }
 }

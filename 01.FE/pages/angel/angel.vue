@@ -806,7 +806,7 @@
         </v-card-title>
         <v-card-actions class="d-flex flex-row-reverse">
           <v-btn color="primary" text @click="movePageToAngelList()">
-            목록으로 이동
+            페이지가 이동 됩니다.
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -1228,6 +1228,7 @@ export default {
           this.$store.commit('userType/changeUserType', 'A01')
 
           setTimeout(function() {
+            this.complete = !this.complete
             vm.movePageToAngelList()
           }, 2000)
         })
@@ -1236,7 +1237,6 @@ export default {
         })
     },
     movePageToAngelList() {
-      this.complete = !this.complete
       this.$router.push({ path: '/angel/angelList' })
     }
   }
