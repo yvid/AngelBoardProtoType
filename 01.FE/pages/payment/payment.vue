@@ -136,6 +136,8 @@ export default {
       this.$axios
         .post('/api/account/kakaoPay', JSON.stringify(param))
         .then((res) => {
+          console.log(res.data)
+
           const payUrl = res.data.next_redirect_pc_url
           this.localSave(this.payPageOpen(payUrl), () =>
             console.err('Local Save Error')
@@ -166,6 +168,8 @@ export default {
       })
     },
     payPageOpen(payUrl) {
+      console.log(payUrl)
+
       const sample = { name: 'sample' }
       window.data = sample
       window.open(payUrl, 'payPop', 'width=450,height=600,left=600')

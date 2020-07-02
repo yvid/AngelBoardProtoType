@@ -168,7 +168,7 @@ def update_user():
     name = account['name']
     emailId = account['emailId']
     
-    row = Account.query.filter(emailId == func.binary(emailId)).first()
+    row = Account.query.filter(Account.emailId == func.binary(emailId)).first()
     if name and emailId:
         row.emailId    = emailId,
         row.emailPsw   = account['emailPsw'],
@@ -235,9 +235,9 @@ def kakaoPay():
         'total_amount': value,
         'vat_amount': 0,
         'tax_free_amount': 0,
-        'approval_url': 'http://119.196.13.124:80/payment/paymentResult',
-        'fail_url': 'http://119.196.13.124:80',
-        'cancel_url': 'http://119.196.13.124:80/payment/paymentCancel',
+        'approval_url': 'http://211.209.243.154:8082/payment/paymentResult',
+        'fail_url': 'http://211.209.243.154:8082/',
+        'cancel_url': 'http://211.209.243.154:8082/payment/paymentCancel',
     }
     
     response = None

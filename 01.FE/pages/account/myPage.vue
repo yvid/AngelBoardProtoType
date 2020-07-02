@@ -99,6 +99,7 @@
               required
             ></v-text-field>
 
+            <!-- 가입유형은 수정 불가능
             <v-row class="d-flex align-baseline" no-gutters>
               <v-col cols="3"><h4>가입 유형</h4></v-col>
               <v-col
@@ -112,10 +113,12 @@
                   label="가입 유형"
                   placeholder="선택.."
                   required
+                  readonly
                   solo
                 ></v-select
               ></v-col>
             </v-row>
+             -->
 
             <v-row
               v-if="account.accountType === '01'"

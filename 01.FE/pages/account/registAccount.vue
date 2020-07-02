@@ -38,6 +38,9 @@
               ></v-text-field>
               <v-btn @click="dupCheck">중복확인</v-btn>
             </v-chip-group>
+            <p style="color: #FFEB3B;">
+              {{ chkAccountDup }}
+            </p>
             <v-text-field
               ref="emailPsw"
               v-model="account.emailPsw"
@@ -189,10 +192,7 @@
               class="ma-2"
               :label="`뉴스레터 수신 : ${newsRxVal}`"
             ></v-switch>
-            <p
-              style="color: #FFEB3B;
-"
-            >
+            <p style="color: #FFEB3B;">
               {{ requiredNotice }}
             </p>
           </v-card-text>
@@ -277,7 +277,8 @@ export default {
     invCompType: null,
     tech: null,
     complete: false,
-    requiredNotice: '상단의 아이디 중복 확인 후 회원가입이 진행 됩니다.'
+    chkAccountDup: '상단의 아이디 중복 확인 후 회원가입이 진행 됩니다.',
+    requiredNotice: null
   }),
 
   computed: {
@@ -395,6 +396,7 @@ export default {
     },
     dupCheckCallback() {
       this.availableEmail = false
+      this.chkAccountDup = '가입이 가능한 아이디 입니다.'
     },
 
     /* 이메일 입력 유효성 확인 */
@@ -422,7 +424,7 @@ export default {
     ================================================================================================
     */
     submit() {
-      this.requiredNotice = '아이디 중복 확인 후 회원가입이 진행 됩니다.'
+      this.requiredNotice = ''
       /* 접속정보 변수에 대입 */
       if (this.remote.ip) this.account.regIP = this.remote.ip
 
