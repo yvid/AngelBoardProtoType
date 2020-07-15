@@ -19,7 +19,7 @@ class Angel(db.Model):
     coNameEng             = db.Column(db.String(50), nullable=False, default='')
     representativeNameKor = db.Column(db.String(25), nullable=False, default='')
     representativeNameEng = db.Column(db.String(25), nullable=False, default='')
-    coTel                 = db.Column(db.Integer, nullable=False, default='')
+    coTel                 = db.Column(db.String(400), nullable=False, default='')
     foundedDate           = db.Column(db.Date, nullable=False)
     coAddr                = db.Column(db.String(200), nullable=False, default='')
     coWeb                 = db.Column(db.String(45), nullable=True, default='')

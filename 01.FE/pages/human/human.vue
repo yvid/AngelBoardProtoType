@@ -709,12 +709,8 @@
                       label="* 현재 투자유치 목표금액(억) 숫자만 입력"
                       required
                       placeholder="예시)  1억을 경우 1 을 입력"
-                      @keyup="
-                        human.invAttrTargetAmount = typingNum(
-                          $event.target.value,
-                          50
-                        )
-                      "
+                      suffix="억원"
+                      type="number"
                     ></v-text-field>
 
                     <v-row class="d-flex align-baseline" no-gutters>
@@ -981,12 +977,8 @@
                           label="* 투자받은금액(억)"
                           required
                           placeholder="억원"
-                          @keyup="
-                            human.invArr[i].preInvAmount = typingNum(
-                              $event.target.value,
-                              50
-                            )
-                          "
+                          suffix="억원"
+                          type="number"
                         ></v-text-field>
 
                         <v-text-field
@@ -1040,9 +1032,11 @@
                 <v-icon left>mdi-pencil</v-icon> 다음
               </v-btn>
             </v-col>
+            <!-- 
             <v-col>
               <v-btn @click="testStore()">다이얼로그 </v-btn>
             </v-col>
+             -->
           </v-row>
         </div>
       </v-card>
@@ -1443,6 +1437,7 @@ export default {
             }
 
             if (res.data[3].length > 0) {
+              this.invTime = res.data[3].length
               /* invArr(투자실적 정보) 다중선택 수정 시 기존값 적용 */
               for (const i in res.data[3]) {
                 this.human.invArr[i] = res.data[3][i]
@@ -1659,7 +1654,6 @@ export default {
       this.$axios
         .post('/api/human/register', JSON.stringify(this.human))
         .then((res) => {
-          this.$store.commit('userType/changeUserType', 'H02')
           this.pageToList(res.data.hSerial)
         })
         .catch((err) => {
@@ -1671,7 +1665,7 @@ export default {
       await this.setStoreUserType()
       await this.setLocalStorage(hSerial)
       setTimeout(() => {
-        this.complete = !this.complete
+        this.complete = false
         this.$router.push({ path: '/human/humanList' })
       }, 1500)
     },

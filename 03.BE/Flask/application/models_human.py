@@ -14,7 +14,7 @@ class HumanBasic(db.Model):
     __tablename__ = 'humanBasic'
     hSerial       = db.Column(db.String(15), primary_key=True, unique=True)
     regEMailID    = db.Column(db.String(45), nullable=False, default='')
-    regTel        = db.Column(db.String(15), nullable=False, default='')
+    regTel        = db.Column(db.String(50), nullable=False, default='')
     regContPwd    = db.Column(db.String(45), nullable=False, default='')
     coNameKor     = db.Column(db.String(45), nullable=False, default='')
     coNameEng     = db.Column(db.String(45), nullable=False, default='')
@@ -25,8 +25,7 @@ class HumanBasic(db.Model):
     coEmail       = db.Column(db.String(45), nullable=False, default='')
     coWeb         = db.Column(db.String(45), nullable=True, default='')
     coLogo        = db.Column(db.String(500), nullable=True, default='')
-    coTel         = db.Column(db.String(15), nullable=False, default='')
-    contNum       = db.Column(db.Integer, nullable=False, autoincrement=True) # 테스트 컬
+    coTel         = db.Column(db.String(50), nullable=False, default='')
     
     def __init__(
             self,
@@ -44,7 +43,6 @@ class HumanBasic(db.Model):
             coWeb       = None,
             coLogo      = None,
             coTel       = None,
-            contNum     = None
             ):
         self.hSerial     = hSerial    ,
         self.regEMailID  = regEMailID ,
@@ -60,7 +58,6 @@ class HumanBasic(db.Model):
         self.coWeb       = coWeb      ,
         self.coLogo      = coLogo     ,
         self.coTel       = coTel      ,
-        self.contNum     = contNum      
 
 
 class HumanDiv(db.Model):
@@ -174,9 +171,9 @@ class HumanStatus(db.Model):
     problemsToSolve     = db.Column(db.String(600), nullable=False, default='')
     ourSolution         = db.Column(db.String(600), nullable=False, default='')
     aboutTeam           = db.Column(db.String(600), nullable=False, default='')
-    capital             = db.Column(db.Integer, nullable=False, default='')
-    totalAssets         = db.Column(db.Integer, nullable=False, default='')
-    totalLiabilities    = db.Column(db.Integer, nullable=False, default='')
+    capital             = db.Column(db.String(400), nullable=False, default='')
+    totalAssets         = db.Column(db.String(400), nullable=False, default='')
+    totalLiabilities    = db.Column(db.String(400), nullable=False, default='')
     numberOfEmp         = db.Column(db.Integer, nullable=False, default='')
     invInfo             = db.Column(db.String(2), nullable=False, default='')
     invInfoAddIntention = db.Column(db.Boolean, nullable=False, default=False)

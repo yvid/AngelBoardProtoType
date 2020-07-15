@@ -160,9 +160,9 @@ def human_updater(human):
         
         row = HumanStatus.query.filter(HumanStatus.hSTSerial == func.binary(hSerial)).first()
         
-        capital             = int(human['capital'].replace(',', ''))
-        totalAssets         = int(human['totalAssets'].replace(',', ''))
-        totalLiabilities    = int(human['totalLiabilities'].replace(',', ''))
+        capital             = human['capital']
+        totalAssets         = human['totalAssets']
+        totalLiabilities    = human['totalLiabilities']
             
         row.hSTSerial           = hSerial,
         row.invStage            = human['invStage'],
@@ -213,20 +213,10 @@ def human_updater(human):
                    
            db.session.commit()
             
-        
-        row = AccountInfo.query.filter(AccountInfo.emailIdF == func.binary(regEMailID)).first()
-        row.emailIdF     = row.emailIdF
-        row.accountType  = row.accountType
-        row.accountCo    = hSerial
-        row.accountFCo   = row.accountFCo
-        row.accountFTech = row.accountFTech
-        row.newsRx       = row.newsRx 
-        
         db.session.commit()
         db.session.close()
     except Exception as e:
         print ('HUMAN UPDATER EXCEPTION E :: ', e, flush=True)
-        jsonify({'hSerial': fail})
         
     return res
         
@@ -319,9 +309,9 @@ def human_register():
             db.session.add(new_humanItem)
             
             print ('human register check03 :: ', flush=True)
-            capital             = int(human['capital'].replace(',', ''))
-            totalAssets         = int(human['totalAssets'].replace(',', ''))
-            totalLiabilities    = int(human['totalLiabilities'].replace(',', ''))
+            capital             = human['capital']
+            totalAssets         = human['totalAssets']
+            totalLiabilities    = human['totalLiabilities']
             # 기업 상태 정보
             new_humanStatus = HumanStatus(
                     hSTSerial           = hSerial,

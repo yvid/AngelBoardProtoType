@@ -1,9 +1,11 @@
 <template>
   <v-flex lg12 md12 sm12 style="min-width: 1190px">
     <v-row align="center">
-      <div class="text-center d-flex pb-4">
-        <v-switch v-if="payOn" v-model="flap" label="전체 펼쳐보기"></v-switch>
-      </div>
+      <!-- 
+        <div class="text-center d-flex pb-4">
+          <v-switch v-if="payOn" v-model="flap" label="전체 펼쳐보기"></v-switch>
+        </div>
+       -->
 
       <v-expansion-panels
         v-model="panel"
@@ -14,7 +16,9 @@
         :hover="hover"
       >
         <v-expansion-panel>
-          <v-expansion-panel-header>기업 정보</v-expansion-panel-header>
+          <v-expansion-panel-header
+            >기업 정보 (상세 보기 - 클릭)</v-expansion-panel-header
+          >
           <v-expansion-panel-content dense>
             <v-row>
               <v-col cols="3">
@@ -864,7 +868,6 @@ export default {
       .post('/api/human/detail', JSON.stringify(hSerial))
       .then((res) => {
         this.human = res.data[0][0]
-
         this.human.corpDiv = this.corpDivFilter(this.human.corpDiv)
         this.human.foundedDate = this.unixTimeFilter(this.human.foundedDate)
         this.human.representativeGender = this.genderFilter(
@@ -880,9 +883,9 @@ export default {
         )
 
         const statusChartValue = [
-          this.human.capital,
-          this.human.totalAssets,
-          this.human.totalLiabilities
+          Number(this.human.capital.replace(/,/gi, '')),
+          Number(this.human.totalAssets.replace(/,/gi, '')),
+          Number(this.human.totalLiabilities.replace(/,/gi, ''))
         ]
         this.chartdata1.datasets[0].data = statusChartValue
 
@@ -890,6 +893,8 @@ export default {
 
         if (res.data[3] !== null) {
           this.humanInv = res.data[3]
+          console.log(this.humanInv)
+
           const labels = []
           const data = []
 

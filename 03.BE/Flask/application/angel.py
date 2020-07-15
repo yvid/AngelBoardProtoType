@@ -60,11 +60,11 @@ def angel_list():
     return jsonify(res)
 
 def angel_updater(angel):
-    res = 'fail'
     aSerial = angel['aSerial']
-    capital = angel['capital'].replace(',', '')
+    capital = angel['capital']
     invInfo = angel['invInfo']
     invInfoAddIntention = angel['invInfoAddIntention']
+    res = jsonify({'aSerial': aSerial})
     
     try:
         row = Angel.query.filter(Angel.aSerial == func.binary(aSerial)).first()
@@ -125,13 +125,10 @@ def angel_updater(angel):
                 db.session.commit()
                 
         db.session.close()
-        
-        res = 'update Complete'
     except Exception as e:
         print ('ANGEL UPDATER EXCEPTION E :: ', e, flush=True)
-        jsonify({'res': res})
     
-    return jsonify({'res': res})
+    return res
 
 @app.route('/angel/register', methods=['POST'])
 def angel_register():
@@ -146,7 +143,7 @@ def angel_register():
         return angel_updater(angel)
     
     try:
-        capital = angel['capital'].replace(',', ''),
+        capital = angel['capital']
         invInfo = angel['invInfo']
         invInfoAddIntention = angel['invInfoAddIntention']
         
@@ -192,7 +189,7 @@ def angel_register():
             
             # add된 테이블 모델의 컬럼을 확인 할 때 사용
             columns = [column.name for column in inspect(Angel).c]
-            # print('columns :: ', columns, flush=True)
+            print('columns :: ', columns, flush=True)
 
             # print('invInfo :: ', invInfo, flush=True)
             # print('invInfoAddIntention :: ', invInfoAddIntention, flush=True)
@@ -229,15 +226,16 @@ def angel_register():
             
             db.session.commit()
             db.session.close()
-        
-        res = 'regist Complete'
-        return jsonify({'res': res})
+            
+            res = jsonify({'aSerial': aSerial})
+            
+        return res
     
     except Exception as e:
         print ('Exception :: ',e , flush=True)
         res = '500'
     
-    return jsonify({'res': res})
+    return res
 
 def aSerial_GEN():
     # 15자리 

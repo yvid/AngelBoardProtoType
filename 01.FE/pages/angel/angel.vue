@@ -17,7 +17,7 @@
               </v-tab>
             </v-tabs>
           </template>
-          <v-toolbar-title>정보 등록</v-toolbar-title>
+          <v-toolbar-title @click="setSample()">정보 등록</v-toolbar-title>
           <v-spacer></v-spacer>
           <span style="color: #BBDEFB; font-size:13px;">{{ notice }}</span>
         </v-app-bar>
@@ -669,12 +669,8 @@
                           label="* 투자 금액(억)"
                           required
                           placeholder="억원"
-                          @keyup="
-                            angel.invArr[i].preInvAmount = typingNum(
-                              $event.target.value,
-                              50
-                            )
-                          "
+                          suffix="억원"
+                          type="number"
                         ></v-text-field>
 
                         <v-text-field
@@ -805,7 +801,7 @@
           <v-spacer></v-spacer>
         </v-card-title>
         <v-card-actions class="d-flex flex-row-reverse">
-          <v-btn color="primary" text @click="movePageToAngelList()">
+          <v-btn color="primary" text @click="complete = false">
             페이지가 이동 됩니다.
           </v-btn>
         </v-card-actions>
@@ -1223,21 +1219,71 @@ export default {
       this.$axios
         .post('/api/angel/register', JSON.stringify(this.angel))
         .then((res) => {
-          const vm = this
-          this.complete = !this.complete
-          this.$store.commit('userType/changeUserType', 'A01')
-
-          setTimeout(function() {
-            this.complete = !this.complete
-            vm.movePageToAngelList()
-          }, 2000)
+          this.pageToList(res.data.aSerial)
         })
         .catch((err) => {
           throw err
         })
     },
-    movePageToAngelList() {
-      this.$router.push({ path: '/angel/angelList' })
+    async pageToList(hSerial) {
+      this.complete = !this.complete
+      await this.setStoreUserType()
+      await this.setLocalStorage(hSerial)
+      setTimeout(() => {
+        this.complete = false
+        this.$router.push({ path: '/angel/angelList' })
+      }, 1500)
+    },
+    setLocalStorage(aSerial) {
+      return new Promise((resolve, reject) => {
+        const accountInfo = JSON.parse(localStorage.getItem('accountInfo'))
+        accountInfo.accountCo = aSerial
+        localStorage.setItem('accountInfo', JSON.stringify(accountInfo))
+        resolve()
+      })
+    },
+    setStoreUserType() {
+      return new Promise((resolve, reject) => {
+        this.$store.commit('userType/changeUserType', 'A01')
+        resolve()
+      })
+    },
+    setSample() {
+      /*
+        테스트 하기 위해 자동입력 샘플 내용
+      */
+      this.angel.regTel = '023503500'
+      this.angel.regContPwd = 123123
+      this.angel.coNameKor = '주식회사 엔젤테스트'
+      this.angel.coNameEng = 'ANGEL TEST Co.Ltd'
+      this.angel.representativeNameKor = '김엔젤'
+      this.angel.representativeNameEng = 'Angel kim'
+      this.angel.coTel = '025503030'
+      this.angel.foundedDate = '2017-07-07'
+      this.angel.coAddr = '서울시 동작구 상도동 엔젤테스트 주식회사'
+      this.angel.coWeb = 'ange.co.kr'
+      this.angel.coLogo = 'http://211.209.243.154:8082/angel_logo.png'
+
+      this.angel.corpDiv = '01'
+      this.angel.coStatus = '01'
+      this.angel.largeField = '02'
+      this.angel.smallField = '엔젤보드 주식회사 엔젤테스트 테스트 문구'
+      this.angel.capital = '300,000,000,000'
+      this.angel.invTypeL = '01'
+      this.angel.invTypeS = '02'
+
+      this.angel.hopCotype01 = '01'
+      this.angel.hopCotype02 = '02'
+      this.angel.hopCoSect01 = '01'
+      this.angel.hopCoSect02 = '02'
+      this.angel.hopCoItem =
+        '엔젤보드 테스트의 선호하는 투자유치 기업의 유형 기술융합 투자 업체'
+      this.angel.hopCoAddr01 = '03'
+      this.angel.hopCoAddr02 = '02'
+      this.angel.hopInvAmount = '02'
+      this.angel.hopSalesVolume = '02'
+      this.angel.hopOpProfit = '01'
+      this.angel.etc = '주식회사 엔젤보드 테스트 회사 소개 테스트 문구'
     }
   }
 }

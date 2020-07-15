@@ -133,6 +133,7 @@
               class="mr-2"
               @click="getSelectedRow(item)"
             >
+              search
             </v-icon>
           </template>
         </v-data-table>

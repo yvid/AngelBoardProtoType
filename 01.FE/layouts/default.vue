@@ -561,6 +561,7 @@ export default {
       this.adminOn = false
       this.setPayOn(false)
       this.userLogin = false
+      this.$store.commit('userType/changeUserType', 'H02')
       this.$router.push({ path: '/' })
     },
     loginProcess() {
