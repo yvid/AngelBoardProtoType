@@ -9,10 +9,7 @@ Created on Mon Mar 23 17:21:42 2020
 from os import environ
 
 mysql_config = {
-	'host': environ.get('MYSQL_HOST', '115.71.232.20'),
-	'user': environ.get('MYSQL_USER', 'yb'),
-	'pass': environ.get('MYSQL_PASS', 'Qwer!2345'),
-	'db':   environ.get('MYSQL_DB', 'yb'),
+	
 }
 
 def alchemy_uri():
